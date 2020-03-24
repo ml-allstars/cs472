@@ -2,7 +2,7 @@ id_2000 = [
     ['kenyon-martin-1', True],
     ['stromile-swift-1', False],
     ['marcus-fizer-1', False],
-    ['mike-miller-1', True],
+    ['mike-miller-1', False],
     ['dermarr-johnson-1', False],
     ['chris-mihm-1', False],
     ['jamal-crawford-1', False],
@@ -179,7 +179,7 @@ id_2004 = [
 ]
 
 id_2005 = [
-    ['andrew-bogut-1', True],
+    ['andrew-bogut-1', False],
     ['marvin-williams-1', False],
     ['deron-williams-1', True],
     ['chris-paul-1', True],
