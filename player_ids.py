@@ -512,3 +512,6 @@ id_2011 = [
     ['etwaun-moore-1', False],
     ['isaiah-thomas-1', True]
 ]
+
+years = [id_2000, id_2001, id_2002, id_2003, id_2004, id_2005,
+         id_2006, id_2007, id_2008, id_2009, id_2010, id_2011]

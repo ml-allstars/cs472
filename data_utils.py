@@ -1,6 +1,6 @@
 from sportsreference.ncaab.roster import Player
 import numpy as np
-from player_ids import *
+from player_ids import years
 
 
 def gather_and_clean_data():
@@ -9,7 +9,6 @@ def gather_and_clean_data():
 
 
 def gather_data():
-    years = [id_2000, id_2001, id_2002, id_2003, id_2004, id_2005]
     instances = []
     for year in years:
         for [player_id, is_all_star] in year:
