@@ -1,3 +1,8 @@
+# total true: 56
+# total false: 422
+# total: 478
+# baseline: 88.385%
+
 id_2000 = [
     ['kenyon-martin-1', True],
     ['stromile-swift-1', False],

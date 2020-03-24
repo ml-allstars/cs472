@@ -15,15 +15,15 @@ def gather_data():
             player: Player = Player(player_id)
             instance = player_to_instance(player, is_all_star)
             instances.append(instance)
-    return np.array(instances)
+    return np.array(instances, dtype=float)
 
 
 def clean_data(data):
-    data[data == None] = -1
+    data[data is None] = -1
     return data
 
 
-def position_to_int(position: str):
+def position_to_num(position: str):
     positions = ['Center', 'Guard', 'Forward']
     if position in positions:
         return positions.index(position)
@@ -31,48 +31,54 @@ def position_to_int(position: str):
         return None
 
 
-def height_to_int(height: str):
+def height_to_num(height: str):
     [feet, inches] = height.split('-')
     return 12 * int(feet) + int(inches)
 
 
+def to_f(val):
+    if val is None:
+        val = -1
+    return float(val)
+
+
 def player_to_instance(player: Player, is_all_star):
-    return np.array([
-        position_to_int(player.position),
-        height_to_int(player.height),
-        player.weight,
-        player.field_goals,
-        player.field_goal_attempts,
-        player.field_goal_percentage,
-        player.three_pointers,
-        player.three_point_attempts,
-        player.three_point_percentage,
-        player.three_pointers,
-        player.three_point_attempts,
-        player.three_point_percentage,
-        player.effective_field_goal_percentage,
-        player.free_throws,
-        player.free_throw_attempts,
-        player.free_throw_percentage,
-        player.offensive_rebounds,
-        player.defensive_rebounds,
-        player.total_rebounds,
-        player.assists,
-        player.steals,
-        player.blocks,
-        player.turnovers,
-        player.personal_fouls,
-        player.points,
-        player.true_shooting_percentage,
-        player.three_point_attempt_rate,
-        player.free_throw_attempt_rate,
-        player.offensive_rebound_percentage,
-        player.defensive_rebound_percentage,
-        player.total_rebound_percentage,
-        player.assist_percentage,
-        player.steal_percentage,
-        player.block_percentage,
-        player.turnover_percentage,
-        player.usage_percentage,
-        int(is_all_star),
-    ])
+    return [
+        to_f(position_to_num(player.position)),
+        to_f(height_to_num(player.height)),
+        to_f(player.weight),
+        to_f(player.field_goals),
+        to_f(player.field_goal_attempts),
+        to_f(player.field_goal_percentage),
+        to_f(player.three_pointers),
+        to_f(player.three_point_attempts),
+        to_f(player.three_point_percentage),
+        to_f(player.three_pointers),
+        to_f(player.three_point_attempts),
+        to_f(player.three_point_percentage),
+        to_f(player.effective_field_goal_percentage),
+        to_f(player.free_throws),
+        to_f(player.free_throw_attempts),
+        to_f(player.free_throw_percentage),
+        to_f(player.offensive_rebounds),
+        to_f(player.defensive_rebounds),
+        to_f(player.total_rebounds),
+        to_f(player.assists),
+        to_f(player.steals),
+        to_f(player.blocks),
+        to_f(player.turnovers),
+        to_f(player.personal_fouls),
+        to_f(player.points),
+        to_f(player.true_shooting_percentage),
+        to_f(player.three_point_attempt_rate),
+        to_f(player.free_throw_attempt_rate),
+        to_f(player.offensive_rebound_percentage),
+        to_f(player.defensive_rebound_percentage),
+        to_f(player.total_rebound_percentage),
+        to_f(player.assist_percentage),
+        to_f(player.steal_percentage),
+        to_f(player.block_percentage),
+        to_f(player.turnover_percentage),
+        to_f(player.usage_percentage),
+        to_f(is_all_star),
+    ]
