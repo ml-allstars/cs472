@@ -15,7 +15,6 @@ hidden_layer_sizes = [
     (300, 300),
     (300, 300, 300),
 ]
-
 activations = ['identity', 'logistic', 'tanh', 'relu']
 solvers = ['lbfgs', 'sgd', 'adam']
 alphas = [.001, .0001, .00001]
