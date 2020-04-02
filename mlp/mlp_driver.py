@@ -1,6 +1,11 @@
+from imblearn.over_sampling import SMOTE
+from imblearn.pipeline import Pipeline
+from imblearn.under_sampling import RandomUnderSampler
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
 from warnings import filterwarnings
+from utils.metrics import *
+from collections import Counter
 
 filterwarnings('ignore')
 
@@ -75,28 +80,76 @@ def init_mlp(params):
     )
 
 
-def run(X, y):
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
-
+def find_best_params(X_train, y_train, X_test, y_test):
     params = init_params()
-    best_overall_score = 0
+    best_overall_results = (0, 0, 0)
     best_overall_params = None
     for param_key in all_param_options:
         param_options = all_param_options[param_key]
-        best_param_option_score = 0
+        best_param_option_results = (0, 0, 0)
         best_param_option_idx = 0
         for option_idx in range(len(param_options)):
             params[param_key] = param_options[option_idx]
             MClass = init_mlp(params)
             MClass.fit(X_train, y_train)
-            score = MClass.score(X_test, y_test)
-            if score > best_param_option_score:
-                best_param_option_score = score
+            y_pred = MClass.predict(X_test)
+            current_results = precision_recall_score(y_test, y_pred)
+            if total_quality(current_results) > total_quality(best_param_option_results):
+                best_param_option_results = current_results
                 best_param_option_idx = option_idx
-            if score > best_overall_score:
-                best_overall_score = score
+            if total_quality(current_results) > total_quality(best_overall_results):
+                best_overall_results = current_results
                 best_overall_params = params.copy()
-                print('New Best Score', score, params)
+                print('New Best', best_overall_results)
         params[param_key] = param_options[best_param_option_idx]
 
-    print(f"best overall params: {best_overall_params}, best score: {best_overall_score}")
+    print('**********************')
+    print(f"Best overall quality: {best_overall_results}")
+    print(f"best overall params: {best_overall_params}")
+
+
+def initial(X, y):
+    print('Initial class distribution...')
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+    find_best_params(X_train, y_train, X_test, y_test)
+    print('\n\n')
+
+
+def smote(X, y):
+    print('SMOTE...')
+    oversample = SMOTE(k_neighbors=5)
+    new_X, new_y = oversample.fit_resample(X, y)
+    print('Oversampled class distribution:', Counter(new_y))
+    find_best_params(new_X, new_y, X, y)
+    print('\n\n')
+
+
+def undersampling(X, y):
+    print('Under-sampling...')
+    undersample = RandomUnderSampler()
+    new_X, new_y = undersample.fit_resample(X, y)
+    print('Undersampled class distribution:', Counter(new_y))
+    find_best_params(new_X, new_y, X, y)
+    print('\n\n')
+
+
+def smote_undersampling(X, y):
+    print('SMOTE and under-sampling...')
+    oversample = SMOTE(k_neighbors=5)
+    undersample = RandomUnderSampler()
+
+    steps = [('o', oversample), ('u', undersample)]
+    combo = Pipeline(steps=steps)
+
+    new_X, new_y = combo.fit_resample(X, y)
+    print('Combo class distribution:', Counter(new_y))
+    # X_train, X_test, y_train, y_test = train_test_split(new_X, new_y, test_size=0.25)
+    find_best_params(new_X, new_y, X, y)
+    print('\n\n')
+
+
+def run(X, y):
+    initial(X, y)
+    smote(X, y)
+    undersampling(X, y)
+    smote_undersampling(X, y)
