@@ -1,6 +1,6 @@
 from sportsreference.ncaab.roster import Player
 import numpy as np
-from player_ids import years
+from data.player_ids import years
 
 
 def gather_and_clean_data():

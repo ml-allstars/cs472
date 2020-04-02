@@ -1,10 +1,11 @@
-# from warnings import warn
 import numpy as np
-from sklearn.neural_network.multilayer_perceptron import MLPClassifier
+from sklearn.neural_network import MLPClassifier
 from imblearn.over_sampling import SMOTE
 from imblearn.under_sampling import RandomUnderSampler
 from collections import Counter
 from imblearn.pipeline import Pipeline
+
+from mlp import mlp_driver
 
 
 def precision_recall(actual, predictions):
@@ -33,7 +34,17 @@ def display_results(score, actual, predictions):
     print('Recall: {}'.format(recall), '\n')
 
 
-data = np.genfromtxt('data.csv', delimiter=',', dtype=float)
+def fit_predict(MClass, X, y):
+    MClass.fit(X, y)
+    return MClass.predict(X)
+
+
+def fit_predict_display(MClass, X, y):
+    pred = fit_predict(MClass, X, y)
+    display_results(MClass.score(X, y), y, pred)
+
+
+data = np.genfromtxt('data/data.csv', delimiter=',', dtype=float)
 
 X = data[:, 0:-1]
 y = data[:, -1]
@@ -44,9 +55,6 @@ MClass = MLPClassifier()
 MClass.fit(X, y)
 pred = MClass.predict(X)
 display_results(MClass.score(X, y), y, pred)
-# score = MClass.score(X, y)
-# print(f"Pred: {pred}")
-# print(f"Score: {score}")
 
 print('SMOTE...')
 oversample = SMOTE(k_neighbors=5)
@@ -76,7 +84,4 @@ MClass.fit(new_X, new_y)
 new_pred = MClass.predict(X)
 display_results(MClass.score(X, y), y, new_pred)
 
-
-
-
-
+mlp_driver.run(X, y)
