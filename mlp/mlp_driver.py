@@ -3,9 +3,11 @@ from imblearn.pipeline import Pipeline
 from imblearn.under_sampling import RandomUnderSampler
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.decomposition import PCA
 from warnings import filterwarnings
 from utils.metrics import *
 from collections import Counter
+import numpy as np
 
 filterwarnings('ignore')
 
@@ -105,7 +107,40 @@ def find_best_params(X_train, y_train, X_test, y_test):
 
     print('**********************')
     print(f"Best overall quality: {best_overall_results}")
-    print(f"best overall params: {best_overall_params}")
+    print(f"Best overall params: {best_overall_params}")
+
+
+#this method does not modify the arguments
+def reduce_PCA(X, y):
+    pca = PCA(n_components=min(len(X), len(X[0])) - 2, svd_solver="full")
+    newX = pca.fit_transform(X, y)
+    return newX
+
+
+#this method does not modify the arguments
+def reduce_wrapper(X, y):
+    reducedX = np.copy(X)
+    index = None
+    keepGoing = True
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+    mlp = MLPClassifier(hidden_layer_sizes=[16], shuffle=True, learning_rate_init=0.1, momentum=0.1)
+    mlp.fit(X_train, y_train)
+    best = mlp.score(X_test, y_test)
+    while keepGoing:
+        keepGoing = False
+        for i in range(len(reducedX[0])):
+            tempX = np.delete(reducedX, i, 1)
+            X_train, X_test, y_train, y_test = train_test_split(tempX, y, test_size=0.25)
+            mlp.fit(X_train, y_train)
+            tempBest = mlp.score(X_test, y_test)
+            if tempBest >= best:
+                index = i
+                best = tempBest
+        if index is not None:
+            reducedX = np.delete(reducedX, index, 1)
+            keepGoing = True
+            index = None
+    return reducedX
 
 
 def initial(X, y):
@@ -148,8 +183,121 @@ def smote_undersampling(X, y):
     print('\n\n')
 
 
+def run_PCA(X, y):
+    print('PCA...')
+    print('Pre PCA shape: ', X.shape)
+    reducedX = reduce_PCA(X, y)
+    print('Post PCA shape: ', reducedX.shape)
+    print('PCA class distribution:')
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+    find_best_params(X_train, y_train, X_test, y_test)
+    print('\n\n')
+
+
+def run_Wrapper(X, y):
+    print('Backwards wrapper...')
+    print('Pre wrapper shape: ', X.shape)
+    reducedX = reduce_wrapper(X, y)
+    print('Post wrapper shape: ', reducedX.shape)
+    print('Backwards wrapper class distribution:')
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+    find_best_params(X_train, y_train, X_test, y_test)
+    print('\n\n')
+
+
+def pca_smote(X, y):
+    print('PCA and SMOTE...')
+    print('Pre PCA shape: ', X.shape)
+    reducedX = reduce_PCA(X, y)
+    print('Post PCA shape: ', reducedX.shape)
+    oversample = SMOTE(k_neighbors=5)
+    new_X, new_y = oversample.fit_resample(reducedX, y)
+    print('Oversampled class distribution:', Counter(new_y))
+    find_best_params(new_X, new_y, reducedX, y)
+    print('\n\n')
+
+
+def pca_undersampling(X, y):
+    print('PCA and Under-sampling...')
+    print('Pre PCA shape: ', X.shape)
+    reducedX = reduce_PCA(X, y)
+    print('Post PCA shape: ', reducedX.shape)
+    undersample = RandomUnderSampler()
+    new_X, new_y = undersample.fit_resample(reducedX, y)
+    print('Undersampled class distribution:', Counter(new_y))
+    find_best_params(new_X, new_y, reducedX, y)
+    print('\n\n')
+
+def pca_smote_undersampling(X, y):
+    print('PCA, SMOTE, and under-sampling...')
+    oversample = SMOTE(k_neighbors=5)
+    undersample = RandomUnderSampler()
+    print('Pre PCA shape: ', X.shape)
+    reducedX = reduce_PCA(X, y)
+    print('Post PCA shape: ', reducedX.shape)
+
+    steps = [('o', oversample), ('u', undersample)]
+    combo = Pipeline(steps=steps)
+
+    new_X, new_y = combo.fit_resample(reducedX, y)
+    print('Combo class distribution:', Counter(new_y))
+    # X_train, X_test, y_train, y_test = train_test_split(new_X, new_y, test_size=0.25)
+    find_best_params(new_X, new_y, reducedX, y)
+    print('\n\n')
+
+
+def wrapper_smote(X, y):
+    print('Backwards wrapper and SMOTE...')
+    print('Pre Wrapper shape: ', X.shape)
+    reducedX = reduce_wrapper(X, y)
+    print('Post Wrapper shape: ', reducedX.shape)
+    oversample = SMOTE(k_neighbors=5)
+    new_X, new_y = oversample.fit_resample(reducedX, y)
+    print('Oversampled class distribution:', Counter(new_y))
+    find_best_params(new_X, new_y, reducedX, y)
+    print('\n\n')
+
+
+def wrapper_undersampling(X, y):
+    print('Backwards Wrapper and Under-sampling...')
+    print('Pre Wrapper shape: ', X.shape)
+    reducedX = reduce_wrapper(X, y)
+    print('Post Wrapper shape: ', reducedX.shape)
+    undersample = RandomUnderSampler()
+    new_X, new_y = undersample.fit_resample(reducedX, y)
+    print('Undersampled class distribution:', Counter(new_y))
+    find_best_params(new_X, new_y, reducedX, y)
+    print('\n\n')
+
+
+def wrapper_smote_undersampling(X, y):
+    print('Backwards wrapper, SMOTE, and under-sampling...')
+    oversample = SMOTE(k_neighbors=5)
+    undersample = RandomUnderSampler()
+    print('Pre Wrapper shape: ', X.shape)
+    reducedX = reduce_wrapper(X, y)
+    print('Post Wrapper shape: ', reducedX.shape)
+
+    steps = [('o', oversample), ('u', undersample)]
+    combo = Pipeline(steps=steps)
+
+    new_X, new_y = combo.fit_resample(reducedX, y)
+    print('Combo class distribution:', Counter(new_y))
+    # X_train, X_test, y_train, y_test = train_test_split(new_X, new_y, test_size=0.25)
+    find_best_params(new_X, new_y, reducedX, y)
+    print('\n\n')
+
+
 def run(X, y):
     initial(X, y)
+    run_PCA(X, y)
+    run_Wrapper(X, y)
     smote(X, y)
+    pca_smote(X, y)
+    wrapper_smote(X, y)
     undersampling(X, y)
+    pca_undersampling(X, y)
+    wrapper_undersampling(X, y)
     smote_undersampling(X, y)
+    pca_smote_undersampling(X, y)
+    wrapper_smote_undersampling(X, y)
