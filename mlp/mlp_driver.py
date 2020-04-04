@@ -106,8 +106,10 @@ def find_best_params(X_train, y_train, X_test, y_test):
         params[param_key] = param_options[best_param_option_idx]
 
     print('**********************')
-    print(f"Best overall quality: {best_overall_results}")
-    print(f"Best overall params: {best_overall_params}")
+    precision, recall, score = best_overall_results
+    print(f"best overall params: {best_overall_params}")
+    print(f"Yielded precision: {precision}, recall: {recall}, score: {score}")
+    print(f"Total quality rating: {total_quality(best_overall_results)}")
 
 
 #this method does not modify the arguments
@@ -144,7 +146,9 @@ def reduce_wrapper(X, y):
 
 
 def initial(X, y):
-    print('Initial class distribution...')
+    print('Initial...')
+    print('class distribution:', Counter(y))
+
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
     find_best_params(X_train, y_train, X_test, y_test)
     print('\n\n')
@@ -153,18 +157,20 @@ def initial(X, y):
 def smote(X, y):
     print('SMOTE...')
     oversample = SMOTE(k_neighbors=5)
-    new_X, new_y = oversample.fit_resample(X, y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+    new_X, new_y = oversample.fit_resample(X_train, y_train)
     print('Oversampled class distribution:', Counter(new_y))
-    find_best_params(new_X, new_y, X, y)
+    find_best_params(new_X, new_y, X_test, y_test)
     print('\n\n')
 
 
 def undersampling(X, y):
     print('Under-sampling...')
     undersample = RandomUnderSampler()
-    new_X, new_y = undersample.fit_resample(X, y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+    new_X, new_y = undersample.fit_resample(X_train, y_train)
     print('Undersampled class distribution:', Counter(new_y))
-    find_best_params(new_X, new_y, X, y)
+    find_best_params(new_X, new_y, X_test, y_test)
     print('\n\n')
 
 
@@ -176,10 +182,10 @@ def smote_undersampling(X, y):
     steps = [('o', oversample), ('u', undersample)]
     combo = Pipeline(steps=steps)
 
-    new_X, new_y = combo.fit_resample(X, y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+    new_X, new_y = combo.fit_resample(X_train, y_train)
     print('Combo class distribution:', Counter(new_y))
-    # X_train, X_test, y_train, y_test = train_test_split(new_X, new_y, test_size=0.25)
-    find_best_params(new_X, new_y, X, y)
+    find_best_params(new_X, new_y, X_test, y_test)
     print('\n\n')
 
 
