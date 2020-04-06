@@ -135,7 +135,7 @@ def reduce_wrapper(X, y):
             X_train, X_test, y_train, y_test = train_test_split(tempX, y, test_size=0.25)
             mlp.fit(X_train, y_train)
             tempBest = mlp.score(X_test, y_test)
-            if tempBest >= best:
+            if abs(tempBest - best) <= .01:
                 index = i
                 best = tempBest
         if index is not None:

@@ -33,6 +33,8 @@ data = np.genfromtxt('data/data.csv', delimiter=',', dtype=float)
 X = data[:, 0:-1]
 y = data[:, -1]
 
+print(X.shape)
+
 # print('Initial class distribution:', Counter(y))
 #
 # MClass = MLPClassifier()
