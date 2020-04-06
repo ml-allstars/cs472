@@ -169,7 +169,7 @@ def reduce_wrapper(X, y):
     mlp.fit(X_train, y_train)
     original = mlp.score(X_test, y_test)
     overall_best = original
-    while keepGoing and reducedX.shape[1] > 5:
+    while keepGoing and len(kept_features) > 10:
         print(f"original {original}")
         best = 0
         keepGoing = False
@@ -183,12 +183,12 @@ def reduce_wrapper(X, y):
                 index = i
                 best = tempBest
         print(f"diff: {original} {best}")
-        if best - original >= -0.01 and overall_best - best <= .04:
+        if original - best <= .02 and overall_best - best <= .04:
             reducedX = np.delete(reducedX, index, 1)
             kept_features.pop(index)
             keepGoing = True
             index = None
-            overall_best = max(best, original)
+            overall_best = max(overall_best, best)
     print(f"Kept features: {kept_features}")
     return reducedX
 
@@ -351,13 +351,13 @@ def wrapper_smote_undersampling(X, y):
 def run(X, y):
     # initial(X, y)
     # run_PCA(X, y)
-    run_Wrapper(X, y)
-    smote(X, y)
+    # run_Wrapper(X, y)
+    # smote(X, y)
     # pca_smote(X, y)
     wrapper_smote(X, y)
-    undersampling(X, y)
+    # undersampling(X, y)
     # pca_undersampling(X, y)
     wrapper_undersampling(X, y)
-    smote_undersampling(X, y)
+    # smote_undersampling(X, y)
     # pca_smote_undersampling(X, y)
     wrapper_smote_undersampling(X, y)
