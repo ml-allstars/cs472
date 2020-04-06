@@ -1,7 +1,7 @@
 WEIGHTS = {
-    'score': .33,
-    'precision': .33,
-    'recall': .33,
+    'score': .5,
+    'precision': .25,
+    'recall': .25,
 }
 
 

@@ -11,6 +11,45 @@ import numpy as np
 
 filterwarnings('ignore')
 
+features = [
+    'position',
+    'height',
+    'weight',
+    'field_goals',
+    'field_goal_attempts',
+    'field_goal_percentage',
+    'three_pointers',
+    'three_point_attempts',
+    'three_point_percentage',
+    'three_pointers',
+    'three_point_attempts',
+    'three_point_percentage',
+    'effective_field_goal_percentage',
+    'free_throws',
+    'free_throw_attempts',
+    'free_throw_percentage',
+    'offensive_rebounds',
+    'defensive_rebounds',
+    'total_rebounds',
+    'assists',
+    'steals',
+    'blocks',
+    'turnovers',
+    'personal_fouls',
+    'points',
+    'true_shooting_percentage',
+    'three_point_attempt_rate',
+    'free_throw_attempt_rate',
+    'offensive_rebound_percentage',
+    'defensive_rebound_percentage',
+    'total_rebound_percentage',
+    'assist_percentage',
+    'steal_percentage',
+    'block_percentage',
+    'turnover_percentage',
+    'usage_percentage',
+]
+
 hidden_layer_sizes = [
     (100,),
     (100, 100),
@@ -112,36 +151,43 @@ def find_best_params(X_train, y_train, X_test, y_test):
     print(f"Total quality rating: {total_quality(best_overall_results)}")
 
 
-#this method does not modify the arguments
+# this method does not modify the arguments
 def reduce_PCA(X, y):
     pca = PCA(n_components=min(len(X), len(X[0])) - 2, svd_solver="full")
     newX = pca.fit_transform(X, y)
     return newX
 
 
-#this method does not modify the arguments
+# this method does not modify the arguments
 def reduce_wrapper(X, y):
     reducedX = np.copy(X)
+    kept_features = features[:]
     index = None
     keepGoing = True
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
     mlp = MLPClassifier(hidden_layer_sizes=[16], shuffle=True, learning_rate_init=0.1, momentum=0.1)
     mlp.fit(X_train, y_train)
-    best = mlp.score(X_test, y_test)
-    while keepGoing:
+    original = mlp.score(X_test, y_test)
+    overall_best = original
+    while keepGoing and len(kept_features) > 7:
+        best = 0
         keepGoing = False
         for i in range(len(reducedX[0])):
             tempX = np.delete(reducedX, i, 1)
             X_train, X_test, y_train, y_test = train_test_split(tempX, y, test_size=0.25)
+
             mlp.fit(X_train, y_train)
             tempBest = mlp.score(X_test, y_test)
-            if abs(tempBest - best) <= .01:
+            if tempBest > best:
                 index = i
                 best = tempBest
-        if index is not None:
+        if original - best <= .02 and overall_best - best <= .04:
             reducedX = np.delete(reducedX, index, 1)
+            kept_features.pop(index)
             keepGoing = True
             index = None
+            overall_best = max(overall_best, best)
+    print(f"Kept features: {kept_features}")
     return reducedX
 
 
@@ -236,6 +282,7 @@ def pca_undersampling(X, y):
     find_best_params(new_X, new_y, X_test, y_test)
     print('\n\n')
 
+
 def pca_smote_undersampling(X, y):
     print('PCA, SMOTE, and under-sampling...')
     oversample = SMOTE(k_neighbors=5)
@@ -301,14 +348,14 @@ def wrapper_smote_undersampling(X, y):
 
 def run(X, y):
     initial(X, y)
-    run_PCA(X, y)
+    # run_PCA(X, y)
     run_Wrapper(X, y)
-    smote(X, y)
-    pca_smote(X, y)
+    # smote(X, y)
+    # pca_smote(X, y)
     wrapper_smote(X, y)
-    undersampling(X, y)
-    pca_undersampling(X, y)
+    # undersampling(X, y)
+    # pca_undersampling(X, y)
     wrapper_undersampling(X, y)
-    smote_undersampling(X, y)
-    pca_smote_undersampling(X, y)
+    # smote_undersampling(X, y)
+    # pca_smote_undersampling(X, y)
     wrapper_smote_undersampling(X, y)
